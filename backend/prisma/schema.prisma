@@ -1,0 +1,198 @@
+// Aura Study Planner — Prisma Schema
+// Defines all database models for the application
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================
+// User — Core authentication model
+// ============================================
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  subjects      Subject[]
+  schedule      Schedule[]
+  reviews       Review[]
+  kanbanBoards  KanbanBoard[]
+  kanbanTasks   KanbanTask[]
+  notes         Note[]
+
+  @@map("users")
+}
+
+// ============================================
+// Subject — Study subjects (e.g., Math, Law)
+// ============================================
+model Subject {
+  id            String    @id @default(cuid())
+  name          String
+  color         String    @default("#6366f1")
+  description   String?
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topics        Topic[]
+  schedules     Schedule[]
+
+  @@map("subjects")
+}
+
+// ============================================
+// Topic — Sub-topics within a subject
+// ============================================
+model Topic {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  subjectId     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  subject       Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  reviews       Review[]
+
+  @@map("topics")
+}
+
+// ============================================
+// Schedule — Weekly study schedule entries
+// ============================================
+model Schedule {
+  id            String    @id @default(cuid())
+  dayOfWeek     Int
+  startTime     String
+  endTime       String
+  subjectId     String
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject       Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("schedules")
+}
+
+// ============================================
+// Review — Spaced repetition review records
+// Intervals: 1, 3, 7, 14, 30, 60, 90 days
+// ============================================
+model Review {
+  id            String    @id @default(cuid())
+  topicId       String
+  userId        String
+  interval      Int       @default(1)
+  easeFactor    Float     @default(2.5)
+  nextReview    DateTime
+  lastReview    DateTime?
+  streak        Int       @default(0)
+  status        ReviewStatus @default(PENDING)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic         Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+enum ReviewStatus {
+  PENDING
+  DUE
+  COMPLETED
+  SKIPPED
+}
+
+// ============================================
+// KanbanBoard — Kanban boards for task org
+// ============================================
+model KanbanBoard {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks         KanbanTask[]
+
+  @@map("kanban_boards")
+}
+
+// ============================================
+// KanbanTask — Individual Kanban tasks
+// ============================================
+model KanbanTask {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  column        KanbanColumn @default(TODO)
+  position      Int       @default(0)
+  priority      Priority  @default(MEDIUM)
+  dueDate       DateTime?
+  boardId       String
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board         KanbanBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@map("kanban_tasks")
+}
+
+enum KanbanColumn {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================
+// Note — Study notes and annotations
+// ============================================
+model Note {
+  id            String    @id @default(cuid())
+  title         String
+  content       String    @default("")
+  subjectId     String?
+  userId        String
+  tags          String?
+  isPinned      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
