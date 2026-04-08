@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { SubjectPage } from '../../../src/features/subjects/SubjectPage'
 import { server } from '../../../src/mocks/server'
 import { http, HttpResponse } from 'msw'
@@ -10,7 +11,7 @@ describe('SubjectPage', () => {
   afterAll(() => server.close())
 
   it('deve exibir um botão de adicionar nova matéria', async () => {
-    render(<SubjectPage />)
+    render(<MemoryRouter><SubjectPage /></MemoryRouter>)
     expect(await screen.findByText(/Nova Matéria/i)).toBeInTheDocument()
   })
 
@@ -30,7 +31,7 @@ describe('SubjectPage', () => {
       })
     )
 
-    render(<SubjectPage />)
+    render(<MemoryRouter><SubjectPage /></MemoryRouter>)
 
     // Aguarda a promessa do Zustand e o componente re-renderizar
     expect(await screen.findByText('Biologia')).toBeInTheDocument()

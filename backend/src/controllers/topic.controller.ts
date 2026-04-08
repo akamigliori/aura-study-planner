@@ -3,7 +3,7 @@
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { TopicService } from '../services/topic.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import { createTopicSchema, updateTopicSchema } from '../schemas/topic.schema.js'

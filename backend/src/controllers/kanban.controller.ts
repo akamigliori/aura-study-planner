@@ -3,10 +3,10 @@
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { KanbanService } from '../services/kanban.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
-import { createBoardSchema, createTaskSchema, moveTaskSchema } from '../schemas/kanban.schema.js'
+import { createBoardSchema, updateBoardSchema, createTaskSchema, moveTaskSchema } from '../schemas/kanban.schema.js'
 
 export class KanbanController {
   private service: KanbanService
@@ -26,6 +26,30 @@ export class KanbanController {
     const validated = createBoardSchema.parse(request)
     const board = await this.service.createBoard(userId, validated.body)
     return reply.status(201).send({ success: true, data: { board } })
+  }
+
+  async getBoard(request: FastifyRequest, reply: FastifyReply) {
+    const { userId } = getUserFromRequest(request)
+    const { id } = request.params as { id: string }
+    const board = await this.service.getBoard(id, userId)
+    return reply.status(200).send({ success: true, data: { board } })
+  }
+
+  async updateBoard(request: FastifyRequest, reply: FastifyReply) {
+    const { userId } = getUserFromRequest(request)
+    const { id } = request.params as { id: string }
+    console.log('[Kanban] updateBoard received:', JSON.stringify(request.body))
+    
+    try {
+      const validated = updateBoardSchema.parse(request)
+      console.log('[Kanban] updateBoard validated:', JSON.stringify(validated.body))
+      
+      const board = await this.service.updateBoard(id, userId, validated.body)
+      return reply.status(200).send({ success: true, data: { board } })
+    } catch (error) {
+      console.error('[Kanban] updateBoard error:', error)
+      throw error
+    }
   }
 
   async deleteBoard(request: FastifyRequest, reply: FastifyReply) {
@@ -52,7 +76,11 @@ export class KanbanController {
   async moveTask(request: FastifyRequest, reply: FastifyReply) {
     const { userId } = getUserFromRequest(request)
     const { id } = request.params as { id: string }
+    console.log('[Kanban] moveTask received:', JSON.stringify(request.body))
+    
     const validated = moveTaskSchema.parse(request)
+    console.log('[Kanban] moveTask validated:', JSON.stringify(validated.body))
+    
     const task = await this.service.moveTask(id, userId, validated.body)
     return reply.status(200).send({ success: true, data: { task } })
   }

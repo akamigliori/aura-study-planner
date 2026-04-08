@@ -2,7 +2,7 @@ import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
-import { PrismaClient } from './generated'
+import { PrismaClient } from './generated/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { errorHandler } from './middlewares/error.middleware.js'
 import { registerAuthRoutes } from './routes/auth.routes.js'
@@ -18,6 +18,7 @@ const prisma = new PrismaClient({ adapter })
 
 const app = Fastify({
   logger: true,
+  bodyLimit: 10 * 1024 * 1024, // 10MB limit for large payloads
 })
 
 // Register error handler
@@ -27,6 +28,7 @@ app.setErrorHandler(errorHandler)
 app.register(cors, {
   origin: process.env.CORS_ORIGIN || true,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 })
 
 // Register JWT plugin

@@ -61,6 +61,8 @@ export async function apiRequest<T>(
   loadTokens()
   let accessToken = getAccessToken()
 
+  console.log(`[API] ${method} ${path}`, body ? JSON.stringify(body).substring(0, 500) : '')
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
@@ -69,32 +71,40 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  let res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  try {
+    let res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    })
 
-  // Retry with refreshed token on 401
-  if (res.status === 401 && tokens?.refreshToken) {
-    const newToken = await refreshToken()
-    if (newToken) {
-      headers['Authorization'] = `Bearer ${newToken}`
-      res = await fetch(`${API_URL}${path}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-      })
+    // Retry with refreshed token on 401
+    if (res.status === 401 && tokens?.refreshToken) {
+      console.log('[API] Token expired, refreshing...')
+      const newToken = await refreshToken()
+      if (newToken) {
+        headers['Authorization'] = `Bearer ${newToken}`
+        res = await fetch(`${API_URL}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        })
+      }
     }
+
+    const data = await res.json()
+
+    console.log(`[API] Response ${res.status}:`, JSON.stringify(data).substring(0, 200))
+
+    if (!res.ok) {
+      throw new Error(data.error?.message || data.message || `Request failed with status ${res.status}`)
+    }
+
+    return data
+  } catch (error) {
+    console.error(`[API] Error ${method} ${path}:`, error)
+    throw error
   }
-
-  const data = await res.json()
-
-  if (!res.ok) {
-    throw new Error(data.error?.message || 'Request failed')
-  }
-
-  return data
 }
 
 export const api = {

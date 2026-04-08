@@ -3,7 +3,7 @@
  */
 
 import { FastifyInstance } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { TopicController } from '../controllers/topic.controller.js'
 import { authenticate } from '../middlewares/auth.middleware.js'
 import { validateBody } from '../middlewares/validate.middleware.js'

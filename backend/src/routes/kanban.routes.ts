@@ -3,11 +3,11 @@
  */
 
 import { FastifyInstance } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { KanbanController } from '../controllers/kanban.controller.js'
 import { authenticate } from '../middlewares/auth.middleware.js'
 import { validateBody } from '../middlewares/validate.middleware.js'
-import { createBoardSchema, createTaskSchema, moveTaskSchema } from '../schemas/kanban.schema.js'
+import { createBoardSchema, updateBoardSchema, createTaskSchema, moveTaskSchema } from '../schemas/kanban.schema.js'
 
 export function registerKanbanRoutes(
   app: FastifyInstance,
@@ -26,6 +26,18 @@ export function registerKanbanRoutes(
     '/kanban/boards',
     { preHandler: [authenticate, validateBody(createBoardSchema)] },
     controller.createBoard.bind(controller)
+  )
+
+  app.get(
+    '/kanban/boards/:id',
+    { preHandler: [authenticate] },
+    controller.getBoard.bind(controller)
+  )
+
+  app.put(
+    '/kanban/boards/:id',
+    { preHandler: [authenticate, validateBody(updateBoardSchema)] },
+    controller.updateBoard.bind(controller)
   )
 
   app.delete(

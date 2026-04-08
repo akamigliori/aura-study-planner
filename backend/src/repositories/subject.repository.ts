@@ -5,7 +5,7 @@
  * scoped to a specific user.
  */
 
-import { PrismaClient, Subject } from '../generated'
+import { PrismaClient, Subject } from './generated/client'
 
 export class SubjectRepository {
   constructor(private prisma: PrismaClient) {}

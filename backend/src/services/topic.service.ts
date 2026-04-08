@@ -2,7 +2,7 @@
  * Topic service — business logic for topic operations.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { TopicRepository } from '../repositories/topic.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateTopicInput, UpdateTopicInput } from '../schemas/topic.schema.js'

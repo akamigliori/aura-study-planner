@@ -2,7 +2,7 @@
  * Schedule repository — data access layer for Schedule model.
  */
 
-import { PrismaClient, Schedule } from '../generated'
+import { PrismaClient, Schedule } from './generated/client'
 
 export class ScheduleRepository {
   constructor(private prisma: PrismaClient) {}

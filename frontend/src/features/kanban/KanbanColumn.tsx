@@ -8,13 +8,15 @@ interface KanbanColumnProps {
   column: {
     id: ColumnType
     title: string
+    color?: string
   }
   tasks: KanbanTask[]
   onAddTask: (columnId: ColumnType) => void
+  onEditTask: (task: KanbanTask) => void
   onDeleteTask: (taskId: string) => void
 }
 
-export function KanbanColumn({ column, tasks, onAddTask, onDeleteTask }: KanbanColumnProps) {
+export function KanbanColumn({ column, tasks, onAddTask, onEditTask, onDeleteTask }: KanbanColumnProps) {
   const { setNodeRef, isOver }: any = useDroppable({
     id: column.id,
     data: {
@@ -27,6 +29,12 @@ export function KanbanColumn({ column, tasks, onAddTask, onDeleteTask }: KanbanC
     <div className="flex w-80 flex-col flex-shrink-0">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {column.color && (
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: column.color }}
+            />
+          )}
           <h2 className="font-semibold text-gray-700 dark:text-gray-300">{column.title}</h2>
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400">
             {tasks.length}
@@ -51,7 +59,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onDeleteTask }: KanbanC
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <KanbanTaskCard key={task.id} task={task} onDelete={onDeleteTask} />
+            <KanbanTaskCard key={task.id} task={task} onEdit={onEditTask} onDelete={onDeleteTask} />
           ))}
         </SortableContext>
         

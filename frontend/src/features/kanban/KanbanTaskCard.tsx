@@ -1,10 +1,11 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import type { KanbanTask, Priority } from '../../types/kanban.types'
 
 interface KanbanTaskCardProps {
   task: KanbanTask
+  onEdit: (task: KanbanTask) => void
   onDelete: (taskId: string) => void
 }
 
@@ -23,7 +24,7 @@ const getPriorityColor = (priority: Priority) => {
   }
 }
 
-export function KanbanTaskCard({ task, onDelete }: KanbanTaskCardProps) {
+export function KanbanTaskCard({ task, onEdit, onDelete }: KanbanTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -58,31 +59,26 @@ export function KanbanTaskCard({ task, onDelete }: KanbanTaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative flex flex-col gap-2 rounded-lg bg-white/70 dark:bg-gray-800/70 p-3 shadow-sm backdrop-blur-md border border-white/20 dark:border-gray-700/50 hover:shadow-md transition-shadow"
+      {...attributes}
+      {...listeners}
+      className="group relative flex flex-col gap-2 rounded-lg bg-white/70 dark:bg-gray-800/70 p-3 shadow-sm backdrop-blur-md border border-white/20 dark:border-gray-700/50 hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <div
-            {...attributes}
-            {...listeners}
-            className="cursor-grab hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 touch-none"
-          >
-            <GripVertical size={16} className="text-gray-400" />
-          </div>
           <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-tight">
             {task.title}
           </h3>
         </div>
         
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
           className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
         >
           <Trash2 size={14} />
         </button>
       </div>
 
-      <div className="pl-8 flex items-center justify-between mt-1">
+      <div className="flex items-center justify-between mt-1">
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getPriorityColor(task.priority)}`}>
           {task.priority}
         </span>

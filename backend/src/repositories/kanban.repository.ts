@@ -2,7 +2,7 @@
  * Kanban repository — data access layer for KanbanBoard and KanbanTask models.
  */
 
-import { PrismaClient, KanbanBoard, KanbanTask } from '../generated'
+import { PrismaClient, KanbanBoard, KanbanTask } from './generated/client'
 
 export class KanbanRepository {
   constructor(private prisma: PrismaClient) {}
@@ -93,6 +93,54 @@ export class KanbanRepository {
   async deleteTask(id: string, userId: string): Promise<KanbanTask> {
     return this.prisma.kanbanTask.delete({
       where: { id, userId },
+    })
+  }
+
+  async reorderTasksInColumn(
+    boardId: string,
+    column: string,
+    oldPosition: number,
+    newPosition: number
+  ): Promise<void> {
+    if (oldPosition === newPosition) return
+
+    if (oldPosition < newPosition) {
+      // Moving down: decrease positions of items between old and new
+      await this.prisma.kanbanTask.updateMany({
+        where: {
+          boardId,
+          column,
+          position: { gt: oldPosition, lte: newPosition },
+        },
+        data: { position: { decrement: 1 } },
+      })
+    } else {
+      // Moving up: increase positions of items between new and old
+      await this.prisma.kanbanTask.updateMany({
+        where: {
+          boardId,
+          column,
+          position: { gte: newPosition, lt: oldPosition },
+        },
+        data: { position: { increment: 1 } },
+      })
+    }
+  }
+
+  async shiftTasksInColumn(
+    boardId: string,
+    column: string,
+    fromPosition: number,
+    delta: number
+  ): Promise<void> {
+    if (delta === 0) return
+    await this.prisma.kanbanTask.updateMany({
+      where: {
+        boardId,
+        column,
+        position: { gte: fromPosition },
+      },
+      data: { position: { increment: delta } },
     })
   }
 }

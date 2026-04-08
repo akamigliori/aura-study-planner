@@ -10,7 +10,7 @@
  */
 
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { AuthService } from '../services/auth.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import {

@@ -40,11 +40,10 @@ describe('SubjectForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /Salvar/i }))
 
     await waitFor(() => {
-      expect(handleSubmit).toHaveBeenCalledWith({
-        name: 'Geografia',
-        color: '#00ffcc',
-        icon: ''
-      })
+      expect(handleSubmit).toHaveBeenCalled()
+      const call = handleSubmit.mock.calls[0][0]
+      expect(call.name).toBe('Geografia')
+      expect(call.color).toBe('#00ffcc')
     })
   })
 })

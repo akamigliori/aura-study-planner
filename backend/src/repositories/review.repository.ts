@@ -2,7 +2,7 @@
  * Review repository — data access layer for Review model.
  */
 
-import { PrismaClient, Review } from '../generated'
+import { PrismaClient, Review } from './generated/client'
 
 export class ReviewRepository {
   constructor(private prisma: PrismaClient) {}

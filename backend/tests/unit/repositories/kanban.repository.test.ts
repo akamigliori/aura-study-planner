@@ -17,6 +17,7 @@ function createMockPrisma() {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      updateMany: vi.fn(),
     },
   } as unknown as PrismaClient
 }
@@ -29,6 +30,7 @@ describe('KanbanRepository', () => {
     id: 'board-1',
     name: 'Study Board',
     description: 'My tasks',
+    columns: '[{"id":"TODO","name":"A Fazer"},{"id":"IN_PROGRESS","name":"Em Progresso"},{"id":"DONE","name":"Concluído"}]',
     userId: 'user-1',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -120,6 +122,78 @@ describe('KanbanRepository', () => {
       const result = await repo.deleteTask('task-1', 'user-1')
 
       expect(result).toEqual(mockTask)
+    })
+
+    it('should reorder tasks in column when moving down', async () => {
+      vi.mocked(mockPrisma.kanbanTask.updateMany).mockResolvedValue([])
+
+      await repo.reorderTasksInColumn('board-1', 'TODO', 0, 2)
+
+      expect(mockPrisma.kanbanTask.updateMany).toHaveBeenCalledWith({
+        where: {
+          boardId: 'board-1',
+          column: 'TODO',
+          position: { gt: 0, lte: 2 },
+        },
+        data: { position: { decrement: 1 } },
+      })
+    })
+
+    it('should reorder tasks in column when moving up', async () => {
+      vi.mocked(mockPrisma.kanbanTask.updateMany).mockResolvedValue([])
+
+      await repo.reorderTasksInColumn('board-1', 'TODO', 2, 0)
+
+      expect(mockPrisma.kanbanTask.updateMany).toHaveBeenCalledWith({
+        where: {
+          boardId: 'board-1',
+          column: 'TODO',
+          position: { gte: 0, lt: 2 },
+        },
+        data: { position: { increment: 1 } },
+      })
+    })
+
+    it('should shift tasks in column with positive delta', async () => {
+      vi.mocked(mockPrisma.kanbanTask.updateMany).mockResolvedValue([])
+
+      await repo.shiftTasksInColumn('board-1', 'TODO', 1, 1)
+
+      expect(mockPrisma.kanbanTask.updateMany).toHaveBeenCalledWith({
+        where: {
+          boardId: 'board-1',
+          column: 'TODO',
+          position: { gte: 1 },
+        },
+        data: { position: { increment: 1 } },
+      })
+    })
+
+    it('should shift tasks in column with negative delta', async () => {
+      vi.mocked(mockPrisma.kanbanTask.updateMany).mockResolvedValue([])
+
+      await repo.shiftTasksInColumn('board-1', 'TODO', 1, -1)
+
+      expect(mockPrisma.kanbanTask.updateMany).toHaveBeenCalledWith({
+        where: {
+          boardId: 'board-1',
+          column: 'TODO',
+          position: { gte: 1 },
+        },
+        data: { position: { increment: -1 } },
+      })
+    })
+
+    it('should not reorder when old and new position are equal', async () => {
+      await repo.reorderTasksInColumn('board-1', 'TODO', 1, 1)
+
+      expect(mockPrisma.kanbanTask.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('should not shift when delta is zero', async () => {
+      await repo.shiftTasksInColumn('board-1', 'TODO', 1, 0)
+
+      expect(mockPrisma.kanbanTask.updateMany).not.toHaveBeenCalled()
     })
   })
 })

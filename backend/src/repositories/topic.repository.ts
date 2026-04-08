@@ -2,7 +2,7 @@
  * Topic repository — data access layer for Topic model.
  */
 
-import { PrismaClient, Topic } from '../generated'
+import { PrismaClient, Topic } from './generated/client'
 
 export class TopicRepository {
   constructor(private prisma: PrismaClient) {}

@@ -130,6 +130,7 @@ model KanbanBoard {
   id            String    @id @default(cuid())
   name          String
   description   String?
+  columns       String    @default("[{\"id\":\"TODO\",\"name\":\"A Fazer\"},{\"id\":\"IN_PROGRESS\",\"name\":\"Em Progresso\"},{\"id\":\"DONE\",\"name\":\"Concluído\"}]")
   userId        String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -148,7 +149,7 @@ model KanbanTask {
   id            String    @id @default(cuid())
   title         String
   description   String?
-  column        KanbanColumn @default(TODO)
+  column        String    @default("TODO")
   position      Int       @default(0)
   priority      Priority  @default(MEDIUM)
   dueDate       DateTime?
@@ -162,12 +163,6 @@ model KanbanTask {
   board         KanbanBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   @@map("kanban_tasks")
-}
-
-enum KanbanColumn {
-  TODO
-  IN_PROGRESS
-  DONE
 }
 
 enum Priority {

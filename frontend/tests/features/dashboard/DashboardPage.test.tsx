@@ -13,7 +13,7 @@ vi.mock('../../../src/store/schedule.store.ts', () => ({
   useScheduleStore: () => ({ blocks: [], fetchSchedule: vi.fn() })
 }))
 vi.mock('../../../src/store/kanban.store.ts', () => ({
-  useKanbanStore: () => ({ board: null, fetchBoard: vi.fn() })
+  useKanbanStore: () => ({ tasks: [], fetchBoardsAndInitialize: vi.fn() })
 }))
 
 describe('DashboardPage', () => {

@@ -11,38 +11,68 @@ import {
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useKanbanStore } from '../../store/kanban.store'
-import type { KanbanColumn as ColumnType, KanbanTask } from '../../types/kanban.types'
+import type { KanbanColumn as ColumnType, KanbanTask, KanbanColumnConfig, KanbanBoard, CreateKanbanBoardData, UpdateKanbanTaskData } from '../../types/kanban.types'
 import { KanbanColumn } from './KanbanColumn'
 import { KanbanTaskForm } from './KanbanTaskForm'
+import { KanbanTaskModal } from './KanbanTaskModal'
 import { KanbanTaskCard } from './KanbanTaskCard'
+import { BoardSelector } from '../../components/kanban/BoardSelector'
+import { BoardForm } from '../../components/kanban/BoardForm'
 import { Modal } from '../../components/ui/Modal'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
-const COLUMNS: { id: ColumnType; title: string }[] = [
-  { id: 'TODO', title: 'Para Fazer' },
-  { id: 'IN_PROGRESS', title: 'Em Progresso' },
-  { id: 'DONE', title: 'Concluído' }
+const DEFAULT_COLUMNS: KanbanColumnConfig[] = [
+  { id: 'TODO', name: 'Para Fazer' },
+  { id: 'IN_PROGRESS', name: 'Em Progresso' },
+  { id: 'DONE', name: 'Concluído' }
 ]
 
 export function KanbanPage() {
   const { 
     activeBoard, 
+    boards,
     tasks, 
     isLoading, 
     fetchBoardsAndInitialize, 
+    createBoard,
+    updateBoard,
+    deleteBoard,
     createTask, 
+    updateTask,
     moveTask, 
     deleteTask 
   } = useKanbanStore()
 
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<KanbanTask | null>(null)
+  const [isBoardFormOpen, setIsBoardFormOpen] = useState(false)
+  const [boardFormMode, setBoardFormMode] = useState<'create' | 'edit'>('create')
+  const [editingBoard, setEditingBoard] = useState<KanbanBoard | undefined>(undefined)
   const [targetColumn, setTargetColumn] = useState<ColumnType>('TODO')
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
+  const [boardToDelete, setBoardToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     fetchBoardsAndInitialize()
   }, [fetchBoardsAndInitialize])
+
+  // Debug: log columns when activeBoard changes
+  useEffect(() => {
+    console.log('[KanbanPage] activeBoard:', activeBoard)
+    console.log('[KanbanPage] activeBoard?.columns:', activeBoard?.columns)
+  }, [activeBoard])
+
+  const columns = useMemo(() => {
+    if (!activeBoard) return DEFAULT_COLUMNS
+    if (!activeBoard.columns) return DEFAULT_COLUMNS
+    if (!Array.isArray(activeBoard.columns)) {
+      console.warn('[KanbanPage] columns is not an array:', activeBoard.columns)
+      return DEFAULT_COLUMNS
+    }
+    return activeBoard.columns
+  }, [activeBoard])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -50,11 +80,14 @@ export function KanbanPage() {
   )
 
   const tasksByColumn = useMemo(() => {
-    const map = new Map<ColumnType, KanbanTask[]>()
-    COLUMNS.forEach(col => map.set(col.id, []))
+    const map = new Map<string, KanbanTask[]>()
+    columns.forEach(col => map.set(col.id, []))
     
-    // Ordered by position
-    const sortedTasks = [...tasks].sort((a, b) => a.position - b.position)
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const posDiff = a.position - b.position
+      if (posDiff !== 0) return posDiff
+      return a.id.localeCompare(b.id)
+    })
     sortedTasks.forEach(task => {
       const colTasks = map.get(task.column) || []
       colTasks.push(task)
@@ -62,7 +95,7 @@ export function KanbanPage() {
     })
     
     return map
-  }, [tasks])
+  }, [tasks, columns])
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
@@ -82,23 +115,23 @@ export function KanbanPage() {
     if (!activeTask) return
 
     // Is it dropping over a column directly?
-    const isOverColumn = COLUMNS.some(c => c.id === overId)
+    const isOverColumn = columns.some(c => c.id === overId)
     
-    let newColumn: ColumnType = activeTask.column
+    let newColumn: string = activeTask.column
     let newPosition = activeTask.position
 
     if (isOverColumn) {
-      newColumn = overId as ColumnType
+      newColumn = overId
       const thisColTasks = tasksByColumn.get(newColumn) || []
-      newPosition = thisColTasks.length // put at the end
+      newPosition = thisColTasks.length
     } else {
-      // Dropping over another task
       const overTask = tasks.find(t => t.id === overId)
       if (overTask) {
         newColumn = overTask.column
         const thisColTasks = tasksByColumn.get(newColumn) || []
         const overIndex = thisColTasks.findIndex(t => t.id === overId)
-        newPosition = overIndex // Take its position
+        
+        newPosition = overIndex
       }
     }
 
@@ -106,7 +139,7 @@ export function KanbanPage() {
       return // Did not move
     }
 
-    moveTask(activeTask.id, newColumn, newPosition)
+    moveTask(activeTask.id, newColumn as ColumnType, newPosition)
   }
 
   const handleCreateTask = async (data: any) => {
@@ -131,6 +164,59 @@ export function KanbanPage() {
     }
   }
 
+  const handleEditTask = (task: KanbanTask) => {
+    setEditingTask(task)
+    setIsTaskModalOpen(true)
+  }
+
+  const handleUpdateTask = async (data: UpdateKanbanTaskData) => {
+    if (!editingTask) return
+    try {
+      await updateTask(editingTask.id, data)
+      setIsTaskModalOpen(false)
+      setEditingTask(null)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleCreateBoard = () => {
+    setBoardFormMode('create')
+    setEditingBoard(undefined)
+    setIsBoardFormOpen(true)
+  }
+
+  const handleEditBoard = (board: KanbanBoard) => {
+    setBoardFormMode('edit')
+    setEditingBoard(board)
+    setIsBoardFormOpen(true)
+  }
+
+  const handleSubmitBoard = async (data: CreateKanbanBoardData) => {
+    if (boardFormMode === 'create') {
+      const newBoard = await createBoard(data)
+      // Seleciona automaticamente o novo board
+    } else if (editingBoard) {
+      await updateBoard(editingBoard.id, data)
+    }
+  }
+
+  const handleDeleteBoard = (boardId: string) => {
+    setBoardToDelete(boardId)
+  }
+
+  const handleConfirmDeleteBoard = async () => {
+    if (boardToDelete) {
+      try {
+        await deleteBoard(boardToDelete)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setBoardToDelete(null)
+      }
+    }
+  }
+
   if (isLoading && !activeBoard) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -142,11 +228,15 @@ export function KanbanPage() {
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {activeBoard?.name || 'Carregando Quadro...'}
-        </h1>
+        <div className="flex items-center gap-4">
+          <BoardSelector
+            onCreateBoard={handleCreateBoard}
+            onEditBoard={handleEditBoard}
+            onDeleteBoard={handleDeleteBoard}
+          />
+        </div>
         <button
-          onClick={() => { setTargetColumn('TODO'); setIsFormOpen(true) }}
+          onClick={() => { setTargetColumn(columns[0]?.id || 'TODO'); setIsFormOpen(true) }}
           className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition"
         >
           Nova Tarefa
@@ -161,12 +251,13 @@ export function KanbanPage() {
           onDragEnd={handleDragEnd}
         >
           <div className="flex h-full items-start gap-6">
-            {COLUMNS.map(col => (
+            {columns.map(col => (
               <KanbanColumn
                 key={col.id}
-                column={col}
+                column={{ id: col.id as ColumnType, title: col.name, color: col.color }}
                 tasks={tasksByColumn.get(col.id) || []}
                 onAddTask={(colId) => { setTargetColumn(colId); setIsFormOpen(true) }}
+                onEditTask={(task) => handleEditTask(task)}
                 onDeleteTask={(taskId) => setTaskToDelete(taskId)}
               />
             ))}
@@ -185,12 +276,27 @@ export function KanbanPage() {
         />
       </Modal>
 
+      <BoardForm
+        isOpen={isBoardFormOpen}
+        onClose={() => setIsBoardFormOpen(false)}
+        onSubmit={handleSubmitBoard}
+        initialData={editingBoard}
+        mode={boardFormMode}
+      />
+
       <ConfirmDialog
-        isOpen={!!taskToDelete}
-        title="Excluir Tarefa"
-        description="Tem certeza que deseja excluir esta tarefa? Essa ação não pode ser desfeita."
-        onConfirm={handleDeleteTask}
-        onClose={() => setTaskToDelete(null)}
+        isOpen={!!boardToDelete}
+        title="Excluir Quadro"
+        description="Tem certeza que deseja excluir este quadro? Todas as tarefas serão excluídas."
+        onConfirm={handleConfirmDeleteBoard}
+        onClose={() => setBoardToDelete(null)}
+      />
+
+      <KanbanTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => { setIsTaskModalOpen(false); setEditingTask(null) }}
+        task={editingTask}
+        onSubmit={handleUpdateTask}
       />
     </div>
   )

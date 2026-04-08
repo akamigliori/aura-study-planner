@@ -2,10 +2,17 @@
  * Kanban service — business logic for Kanban boards and tasks.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from './generated/client'
 import { KanbanRepository } from '../repositories/kanban.repository.js'
 import { NotFoundError } from '../utils/errors.js'
-import type { CreateBoardInput, CreateTaskInput, MoveTaskInput } from '../schemas/kanban.schema.js'
+import type { CreateBoardInput, UpdateBoardInput, CreateTaskInput, MoveTaskInput } from '../schemas/kanban.schema.js'
+import type { KanbanColumnConfig } from '../schemas/kanban.schema.js'
+
+const DEFAULT_COLUMNS: KanbanColumnConfig[] = [
+  { id: 'TODO', name: 'A Fazer' },
+  { id: 'IN_PROGRESS', name: 'Em Progresso' },
+  { id: 'DONE', name: 'Concluído' },
+]
 
 export class KanbanService {
   private repository: KanbanRepository
@@ -16,11 +23,32 @@ export class KanbanService {
 
   // Boards
   async listBoards(userId: string) {
-    return this.repository.findBoardsByUserId(userId)
+    const boards = await this.repository.findBoardsByUserId(userId)
+    return boards.map(board => this.parseBoardColumns(board))
+  }
+
+  async getBoard(id: string, userId: string) {
+    const board = await this.repository.findBoardByIdAndUserId(id, userId)
+    if (!board) throw new NotFoundError('Board')
+    return this.parseBoardColumns(board)
   }
 
   async createBoard(userId: string, input: CreateBoardInput) {
-    return this.repository.createBoard({ ...input, userId })
+    const columns = input.columns ? JSON.stringify(input.columns) : JSON.stringify(DEFAULT_COLUMNS)
+    return this.repository.createBoard({ ...input, userId, columns })
+  }
+
+  async updateBoard(id: string, userId: string, input: UpdateBoardInput) {
+    const board = await this.repository.findBoardByIdAndUserId(id, userId)
+    if (!board) throw new NotFoundError('Board')
+
+    const updateData: Record<string, unknown> = {}
+    if (input.name !== undefined) updateData.name = input.name
+    if (input.description !== undefined) updateData.description = input.description
+    if (input.columns !== undefined) updateData.columns = JSON.stringify(input.columns)
+
+    const updated = await this.repository.updateBoard(id, userId, updateData)
+    return this.parseBoardColumns(updated)
   }
 
   async deleteBoard(id: string, userId: string) {
@@ -56,11 +84,21 @@ export class KanbanService {
     const task = await this.repository.findTaskByIdAndUserId(id, userId)
     if (!task) throw new NotFoundError('Task')
 
-    const position = input.position ?? (await this.getMaxPosition(task.boardId, input.column) + 1)
+    const oldColumn = task.column
+    const oldPosition = task.position
+    const newColumn = input.column
+    const newPosition = input.position ?? (await this.getMaxPosition(task.boardId, newColumn) + 1)
+
+    if (oldColumn === newColumn) {
+      await this.repository.reorderTasksInColumn(task.boardId, oldColumn, oldPosition, newPosition)
+    } else {
+      await this.repository.shiftTasksInColumn(task.boardId, oldColumn, oldPosition + 1, -1)
+      await this.repository.shiftTasksInColumn(task.boardId, newColumn, newPosition, 1)
+    }
 
     return this.repository.updateTask(id, userId, {
-      column: input.column,
-      position,
+      column: newColumn,
+      position: newPosition,
     })
   }
 
@@ -81,5 +119,14 @@ export class KanbanService {
     const columnTasks = tasks.filter((t) => t.column === column)
     if (columnTasks.length === 0) return 0
     return Math.max(...columnTasks.map((t) => t.position))
+  }
+
+  private parseBoardColumns(board: any): any {
+    try {
+      const parsed = board.columns ? JSON.parse(board.columns) : null
+      return { ...board, columns: parsed || DEFAULT_COLUMNS }
+    } catch {
+      return { ...board, columns: DEFAULT_COLUMNS }
+    }
   }
 }
