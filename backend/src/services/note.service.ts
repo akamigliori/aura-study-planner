@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Note service — business logic for note operations.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { NoteRepository } from '../repositories/note.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateNoteInput, UpdateNoteInput } from '../schemas/note.schema.js'

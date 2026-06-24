@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Subject routes — registers all subject CRUD endpoints.
  */
 
 import { FastifyInstance } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { SubjectController } from '../controllers/subject.controller.js'
 import { authenticate } from '../middlewares/auth.middleware.js'
 import { validateBody } from '../middlewares/validate.middleware.js'

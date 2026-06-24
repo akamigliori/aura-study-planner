@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Kanban repository — data access layer for KanbanBoard and KanbanTask models.
  */
 
-import { PrismaClient, KanbanBoard, KanbanTask } from '../generated'
+import { PrismaClient, KanbanBoard, KanbanTask } from '../generated/client'
 
 export class KanbanRepository {
   constructor(private prisma: PrismaClient) {}

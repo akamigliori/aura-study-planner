@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Schedule controller — HTTP request handlers for schedule routes.
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { ScheduleService } from '../services/schedule.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import { createScheduleSchema, updateScheduleSchema } from '../schemas/schedule.schema.js'

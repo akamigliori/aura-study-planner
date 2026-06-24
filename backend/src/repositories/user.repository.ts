@@ -1,4 +1,4 @@
-/**
+﻿/**
  * User repository — data access layer for User model.
  *
  * Provides type-safe database operations using Prisma Client.
@@ -9,7 +9,7 @@
  *   const user = await repo.findByEmail('test@example.com')
  */
 
-import { PrismaClient, User } from '../generated'
+import { PrismaClient, User } from '../generated/client'
 
 export class UserRepository {
   constructor(private prisma: PrismaClient) {}

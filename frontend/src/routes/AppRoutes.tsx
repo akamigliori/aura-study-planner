@@ -8,6 +8,7 @@ import { SubjectPage } from '../features/subjects/SubjectPage'
 import { SubjectDetailsPage } from '../features/topics/SubjectDetailsPage'
 import { SchedulePage } from '../features/schedule/SchedulePage'
 import { KanbanPage } from '../features/kanban/KanbanPage'
+import { ReviewPage } from '../features/review/ReviewPage'
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -42,7 +43,9 @@ export function AppRoutes() {
           path="/reviews"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Revisões" />
+              <MainLayout>
+                <ReviewPage />
+              </MainLayout>
             </ProtectedRoute>
           }
         />

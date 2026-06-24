@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Kanban service — business logic for Kanban boards and tasks.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { KanbanRepository } from '../repositories/kanban.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateBoardInput, CreateTaskInput, MoveTaskInput } from '../schemas/kanban.schema.js'

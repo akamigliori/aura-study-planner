@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Note repository — data access layer for Note model.
  */
 
-import { PrismaClient, Note } from '../generated'
+import { PrismaClient, Note } from '../generated/client'
 
 export class NoteRepository {
   constructor(private prisma: PrismaClient) {}

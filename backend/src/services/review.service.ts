@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Review service — business logic for spaced repetition reviews.
  *
  * Implements the SM-2 algorithm for spaced repetition scheduling.
  * Intervals: 1, 3, 7, 14, 30, 60, 90 days based on user quality rating.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { ReviewRepository } from '../repositories/review.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateReviewInput, CompleteReviewInput } from '../schemas/review.schema.js'

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Kanban controller — HTTP request handlers for kanban routes.
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { KanbanService } from '../services/kanban.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import { createBoardSchema, createTaskSchema, moveTaskSchema } from '../schemas/kanban.schema.js'

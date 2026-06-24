@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Subject repository — data access layer for Subject model.
  *
  * Provides type-safe database operations for study subjects
  * scoped to a specific user.
  */
 
-import { PrismaClient, Subject } from '../generated'
+import { PrismaClient, Subject } from '../generated/client'
 
 export class SubjectRepository {
   constructor(private prisma: PrismaClient) {}

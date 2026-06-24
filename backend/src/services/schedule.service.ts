@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Schedule service — business logic for schedule operations.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { ScheduleRepository } from '../repositories/schedule.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateScheduleInput, UpdateScheduleInput } from '../schemas/schedule.schema.js'

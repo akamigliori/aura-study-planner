@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Note controller — HTTP request handlers for note routes.
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { NoteService } from '../services/note.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import { createNoteSchema, updateNoteSchema } from '../schemas/note.schema.js'

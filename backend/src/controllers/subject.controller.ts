@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Subject controller — HTTP request handlers for subject routes.
  */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { SubjectService } from '../services/subject.service.js'
 import { getUserFromRequest } from '../middlewares/auth.middleware.js'
 import { createSubjectSchema, updateSubjectSchema } from '../schemas/subject.schema.js'

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Subject service — business logic for subject operations.
  */
 
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { SubjectRepository } from '../repositories/subject.repository.js'
 import { NotFoundError } from '../utils/errors.js'
 import type { CreateSubjectInput, UpdateSubjectInput } from '../schemas/subject.schema.js'

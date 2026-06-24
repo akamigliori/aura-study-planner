@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Authentication service — business logic for auth operations.
  *
  * Handles user registration, login, token refresh, and password
@@ -11,7 +11,7 @@
  */
 
 import { FastifyInstance } from 'fastify'
-import { PrismaClient } from '../generated'
+import { PrismaClient } from '../generated/client'
 import { UserRepository } from '../repositories/user.repository.js'
 import { hashPassword, comparePassword } from '../utils/password.js'
 import {
