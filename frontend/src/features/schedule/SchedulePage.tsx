@@ -1,39 +1,38 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Edit2, Clock } from 'lucide-react'
+import { Plus, Trash2, Edit2 } from 'lucide-react'
 import { useScheduleStore } from '../../store/schedule.store'
 import { useSubjectStore } from '../../store/subject.store'
 import { ScheduleForm } from './ScheduleForm'
 import { Modal } from '../../components/ui/Modal'
-import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import type { ScheduleBlock } from '../../types/schedule.types'
 
 const DAYS = [
-  { value: 1, label: 'Segunda' },
-  { value: 2, label: 'Terça' },
-  { value: 3, label: 'Quarta' },
-  { value: 4, label: 'Quinta' },
-  { value: 5, label: 'Sexta' },
-  { value: 6, label: 'Sábado' },
-  { value: 0, label: 'Domingo' }
+  { value: 1, label: 'Seg', full: 'Segunda' },
+  { value: 2, label: 'Ter', full: 'Terça' },
+  { value: 3, label: 'Qua', full: 'Quarta' },
+  { value: 4, label: 'Qui', full: 'Quinta' },
+  { value: 5, label: 'Sex', full: 'Sexta' },
+  { value: 6, label: 'Sáb', full: 'Sábado' },
+  { value: 0, label: 'Dom', full: 'Domingo' },
 ]
 
+const todayDow = new Date().getDay()
+
 export function SchedulePage() {
-  const { blocks, isLoading, fetchSchedule, addBlock, updateBlock, deleteBlock } = useScheduleStore()
+  const { blocks, isLoading, fetchSchedule, addBlock, updateBlock, deleteBlock } =
+    useScheduleStore()
   const { subjects, fetchSubjects } = useSubjectStore()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<ScheduleBlock | null>(null)
   const [targetDay, setTargetDay] = useState<number>(1)
-  
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [blockToDelete, setBlockToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSchedule()
-    if (subjects.length === 0) {
-      fetchSubjects()
-    }
+    if (subjects.length === 0) fetchSubjects()
   }, [fetchSchedule, fetchSubjects, subjects.length])
 
   const handleOpenNew = (dayValue: number) => {
@@ -58,113 +57,159 @@ export function SchedulePage() {
   }
 
   const handleDelete = async () => {
-    if (blockToDelete) {
-      await deleteBlock(blockToDelete)
-    }
+    if (blockToDelete) await deleteBlock(blockToDelete)
   }
 
-  // Ordenar blocos pelo horário de início
   const sortedBlocks = [...blocks].sort((a, b) => a.startTime.localeCompare(b.startTime))
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full">
+      {/* Page header */}
+      <div className="flex items-end justify-between mb-7">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-ink-dim mb-[5px]">
             Cronograma
+          </div>
+          <h1 className="font-serif text-[26px] font-bold tracking-[-0.02em] text-ink leading-none">
+            Semana de estudos
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Organize sua semana de estudos</p>
         </div>
-        <Button onClick={() => handleOpenNew(1)} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Agendamento
-        </Button>
+        <button
+          onClick={() => handleOpenNew(1)}
+          className="flex items-center gap-2 bg-forest/10 border border-forest/25 text-forest font-mono text-[9.5px] tracking-[0.07em] uppercase rounded-[4px] px-4 py-[9px] hover:bg-forest/15 transition-colors"
+        >
+          <Plus className="w-3 h-3" />
+          Novo agendamento
+        </button>
       </div>
 
       {isLoading && blocks.length === 0 ? (
         <div className="flex justify-center p-12">
-          <div className="w-8 h-8 rounded-full border-b-2 border-primary-500 animate-spin" />
+          <div className="w-6 h-6 rounded-full border-2 border-edge border-t-forest animate-spin" />
         </div>
       ) : (
-        <div className="flex bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-white/5 overflow-x-auto pb-4 shadow-sm h-full min-h-[600px]">
-          {DAYS.map(day => {
-            const dayBlocks = sortedBlocks.filter(b => b.dayOfWeek === day.value)
-            
-            return (
-              <div key={day.value} className="flex-1 min-w-[200px] border-r border-gray-100 dark:border-white/5 last:border-0 p-4">
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-white/5">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+        <div className="bg-card border border-edge rounded-[5px] overflow-hidden flex-1 min-h-[560px]">
+          {/* Day headers */}
+          <div className="grid grid-cols-7 border-b border-edge bg-shell">
+            {DAYS.map((day) => {
+              const isToday = day.value === todayDow
+              return (
+                <div
+                  key={day.value}
+                  className={[
+                    'px-2 py-[7px] border-r border-edge last:border-r-0',
+                    isToday ? 'bg-forest/10' : '',
+                  ].join(' ')}
+                >
+                  <div
+                    className={[
+                      'font-mono text-[8.5px] tracking-[0.07em] uppercase',
+                      isToday ? 'text-forest' : 'text-ink-dim',
+                    ].join(' ')}
+                  >
                     {day.label}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">
-                      {dayBlocks.length}
-                    </span>
-                    <button 
+                  </div>
+                  <div
+                    className={[
+                      'font-mono text-[10px] mt-[2px] tabular',
+                      isToday ? 'text-forest' : 'text-ink-muted',
+                    ].join(' ')}
+                  >
+                    {day.full}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Day columns */}
+          <div className="grid grid-cols-7 h-full min-h-[400px]">
+            {DAYS.map((day) => {
+              const dayBlocks = sortedBlocks.filter((b) => b.dayOfWeek === day.value)
+              const isToday = day.value === todayDow
+
+              return (
+                <div
+                  key={day.value}
+                  className={[
+                    'border-r border-edge last:border-r-0 p-[5px] flex flex-col gap-[3px]',
+                    isToday ? 'bg-forest/[.03]' : '',
+                  ].join(' ')}
+                >
+                  {dayBlocks.length === 0 ? (
+                    <button
                       onClick={() => handleOpenNew(day.value)}
-                      className="text-gray-400 hover:text-primary-500 transition-colors"
-                      title="Adicionar aula neste dia"
+                      className="flex-1 flex items-center justify-center text-ink-dim hover:text-forest transition-colors opacity-0 hover:opacity-100 group-hover:opacity-100"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {dayBlocks.length === 0 ? (
-                    <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
-                      Livre
-                    </div>
                   ) : (
-                    dayBlocks.map(block => {
-                      const subject = subjects.find(s => s.id === block.subjectId)
-                      const color = subject?.color || '#cbd5e1'
-                      
-                      return (
-                        <div 
-                          key={block.id} 
-                          className="group relative p-3 rounded-xl border border-transparent hover:border-gray-200 dark:hover:border-white/10 transition-all shadow-sm hover:shadow"
-                          style={{ backgroundColor: `${color}15`, borderLeftWidth: '4px', borderLeftColor: color }}
-                        >
-                          <div className="flex items-start justify-between absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-lg p-1 shadow-sm">
-                            <button 
-                              onClick={() => handleOpenEdit(block)}
-                              className="p-1.5 text-gray-500 hover:text-primary-500 transition-colors"
-                            >
-                              <Edit2 className="w-3" />
-                            </button>
-                            <button 
-                              onClick={() => { setBlockToDelete(block.id); setIsConfirmOpen(true) }}
-                              className="p-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 className="w-3" />
-                            </button>
-                          </div>
+                    <>
+                      {dayBlocks.map((block) => {
+                        const subject = subjects.find((s) => s.id === block.subjectId)
+                        const color = subject?.color || '#344F6A'
+                        const bgAlpha = `${color}14`
 
-                          <div className="font-semibold text-gray-900 dark:text-white text-sm">
-                            {subject?.name || 'Matéria Desconhecida'}
+                        return (
+                          <div
+                            key={block.id}
+                            className="group relative rounded-[1px] px-[6px] py-[4px]"
+                            style={{
+                              borderLeftWidth: '3px',
+                              borderLeftColor: color,
+                              backgroundColor: bgAlpha,
+                            }}
+                          >
+                            <div className="text-[9.5px] font-semibold text-ink leading-tight truncate">
+                              {subject?.name || 'Matéria'}
+                            </div>
+                            <div className="font-mono text-[7.5px] text-ink-muted mt-[1px]">
+                              {block.startTime} – {block.endTime}
+                            </div>
+
+                            {/* Hover actions */}
+                            <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 flex gap-[2px] transition-opacity">
+                              <button
+                                onClick={() => handleOpenEdit(block)}
+                                className="p-[3px] bg-card rounded text-ink-dim hover:text-forest"
+                              >
+                                <Edit2 className="w-2.5 h-2.5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setBlockToDelete(block.id)
+                                  setIsConfirmOpen(true)
+                                }}
+                                className="p-[3px] bg-card rounded text-ink-dim hover:text-red-400"
+                              >
+                                <Trash2 className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center text-xs text-gray-500 mt-2 gap-1 font-medium">
-                            <Clock className="w-3 h-3" />
-                            {block.startTime} - {block.endTime}
-                          </div>
-                        </div>
-                      )
-                    })
+                        )
+                      })}
+
+                      <button
+                        onClick={() => handleOpenNew(day.value)}
+                        className="mt-auto px-1 py-[3px] text-ink-dim hover:text-forest transition-colors flex items-center justify-center opacity-40 hover:opacity-100"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </>
                   )}
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       )}
 
-      <Modal 
-        isOpen={isFormOpen} 
+      <Modal
+        isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingBlock ? "Editar Estudo" : "Agendar Estudo"}
+        title={editingBlock ? 'Editar horário' : 'Agendar estudo'}
       >
-        <ScheduleForm 
+        <ScheduleForm
           initialData={editingBlock || undefined}
           initialDay={targetDay}
           onSubmit={handleCreateOrUpdate}
@@ -174,10 +219,13 @@ export function SchedulePage() {
 
       <ConfirmDialog
         isOpen={isConfirmOpen}
-        title="Cancelar Estudo"
-        description="Tem certeza que deseja remover este horário do seu cronograma?"
+        title="Remover horário"
+        description="Tem certeza que deseja remover este horário do cronograma?"
         onConfirm={handleDelete}
-        onClose={() => { setIsConfirmOpen(false); setBlockToDelete(null) }}
+        onClose={() => {
+          setIsConfirmOpen(false)
+          setBlockToDelete(null)
+        }}
       />
     </div>
   )

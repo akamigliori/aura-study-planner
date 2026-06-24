@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { BrainCircuit } from 'lucide-react'
 import { useReviewStore } from '../../store/review.store'
 import { useSubjectStore } from '../../store/subject.store'
 import type { ReviewQuality } from '../../types/review.types'
@@ -51,33 +50,41 @@ export function ReviewPage() {
   if (isLoading && dueReviews.length === 0 && session.total === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-7 w-7 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+        <div className="w-6 h-6 rounded-full border-2 border-edge border-t-forest animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0">
-          <BrainCircuit className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-        </div>
+    <div className="max-w-2xl mx-auto">
+      {/* Page header */}
+      <div className="flex items-start justify-between mb-7">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-ink-dim mb-[5px]">
+            Repetição espaçada
+          </div>
+          <h1 className="font-serif text-[26px] font-bold tracking-[-0.02em] text-ink leading-none">
             Revisões
           </h1>
-          {session.total > 0 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {session.total} {session.total === 1 ? 'item' : 'itens'} para revisar
-            </p>
-          )}
         </div>
+        {session.total > 0 && !isSessionComplete && (
+          <div className="text-right">
+            <div className="font-mono text-[9.5px] text-ink-muted mb-[6px]">
+              {session.completed} de {session.total} revisadas hoje
+            </div>
+            <div className="w-[180px] h-[2px] bg-edge rounded-full overflow-hidden ml-auto">
+              <div
+                className="h-full bg-forest rounded-full transition-all duration-500"
+                style={{ width: `${session.total > 0 ? (session.completed / session.total) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Error banner */}
+      {/* Error */}
       {error && (
-        <div className="px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl text-sm text-red-700 dark:text-red-400">
+        <div className="px-4 py-3 bg-red-900/20 border border-red-800/40 rounded-[4px] text-[13px] text-red-400 mb-4">
           {error}
         </div>
       )}
@@ -89,7 +96,7 @@ export function ReviewPage() {
 
       {/* Active session */}
       {!isSessionComplete && session.total > 0 && (
-        <>
+        <div className="space-y-4">
           <ReviewProgress completed={session.completed} total={session.total} />
           {currentReview && (
             <ReviewCard
@@ -100,10 +107,10 @@ export function ReviewPage() {
               subjectColor={currentSubject?.color}
             />
           )}
-        </>
+        </div>
       )}
 
-      {/* Empty state — no reviews due */}
+      {/* Empty — sem revisões */}
       {!isLoading && session.total === 0 && !isSessionComplete && (
         <ReviewEmptyState />
       )}

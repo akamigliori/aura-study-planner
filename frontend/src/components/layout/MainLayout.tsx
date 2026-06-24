@@ -1,14 +1,12 @@
 import type { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
-import { Header } from './Header'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="flex min-h-screen bg-surface">
       <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col">
-        <Header />
-        <main className="flex-1 p-8">{children}</main>
+      <div className="flex-1 ml-[200px] min-w-0">
+        <main className="p-10 max-w-[1200px]">{children}</main>
       </div>
     </div>
   )

@@ -1,17 +1,28 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Calendar, Clock, KanbanSquare, FileText, LogOut } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import { useAuthStore } from '../../store/auth.store'
 
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/subjects', label: 'Matérias', icon: BookOpen },
-  { to: '/schedule', label: 'Cronograma', icon: Calendar },
-  { to: '/reviews', label: 'Revisões', icon: Clock },
-  { to: '/kanban', label: 'Kanban', icon: KanbanSquare },
-  { to: '/notes', label: 'Anotações', icon: FileText },
+const NAV_SECTIONS = [
+  {
+    section: 'Geral',
+    items: [
+      { to: '/', label: 'Dashboard', exact: true },
+      { to: '/subjects', label: 'Matérias' },
+      { to: '/schedule', label: 'Cronograma' },
+    ],
+  },
+  {
+    section: 'Estudo',
+    items: [
+      { to: '/reviews', label: 'Revisões' },
+      { to: '/kanban', label: 'Kanban' },
+      { to: '/notes', label: 'Anotações' },
+    ],
+  },
 ]
 
 export function Sidebar() {
+  const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
 
@@ -20,48 +31,84 @@ export function Sidebar() {
     navigate('/login')
   }
 
+  const initials =
+    user?.name
+      ?.split(' ')
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() || 'U'
+
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-      <div className="flex h-full flex-col">
-        <div className="flex h-16 items-center border-b border-gray-200 px-6 dark:border-gray-700">
-          <Link to="/" className="text-xl font-bold text-primary-600">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-[200px] bg-shell border-r border-edge flex flex-col">
+      {/* Brand */}
+      <div className="px-[18px] pt-[22px] pb-4 border-b border-edge flex-shrink-0">
+        <Link to="/" className="block">
+          <div className="font-serif text-[19px] font-bold tracking-[-0.015em] text-ink leading-none mb-[3px]">
             Aura
-          </Link>
-        </div>
+          </div>
+          <div className="font-mono text-[8px] tracking-[0.12em] uppercase text-ink-dim">
+            Study Planner
+          </div>
+        </Link>
+      </div>
 
-        <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-          <div className="mb-3 flex items-center gap-3 px-3">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-medium text-primary-700">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+      {/* Navigation */}
+      <nav className="flex-1 py-[10px] overflow-y-auto">
+        {NAV_SECTIONS.map(({ section, items }) => (
+          <div key={section}>
+            <div className="font-mono text-[8px] tracking-[0.12em] uppercase text-ink-dim px-[17px] pt-[14px] pb-[5px]">
+              {section}
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                {user?.name}
-              </p>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                {user?.email}
-              </p>
+            {items.map(({ to, label, exact }) => {
+              const isActive = exact
+                ? location.pathname === to
+                : location.pathname === to || location.pathname.startsWith(to + '/')
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={[
+                    'flex items-center gap-[10px] px-[17px] py-[9px] text-[12.5px] border-l-2 transition-colors duration-150',
+                    isActive
+                      ? 'border-forest bg-forest/10 text-forest font-semibold'
+                      : 'border-transparent text-ink-dim hover:text-ink-muted hover:bg-white/[.02]',
+                  ].join(' ')}
+                >
+                  <span
+                    className={[
+                      'w-[11px] h-[11px] rounded-[2px] flex-shrink-0 transition-opacity',
+                      isActive ? 'bg-forest opacity-100' : 'bg-current opacity-30',
+                    ].join(' ')}
+                  />
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="flex-shrink-0 border-t border-edge">
+        <div className="px-4 py-3 flex items-center gap-[10px]">
+          <div className="w-7 h-7 rounded-full bg-forest/10 border border-forest/25 text-forest text-[9px] font-bold font-sans flex items-center justify-center flex-shrink-0">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] font-semibold text-ink-muted truncate leading-tight">
+              {user?.name}
+            </div>
+            <div className="font-mono text-[8.5px] text-ink-dim truncate">
+              {user?.email}
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            title="Sair"
+            className="flex-shrink-0 p-1 text-ink-dim hover:text-red-400 transition-colors rounded"
           >
-            <LogOut className="h-5 w-5" />
-            Sair
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

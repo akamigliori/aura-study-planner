@@ -1,49 +1,52 @@
-import { Flame, Clock } from 'lucide-react'
 import type { Review, ReviewQuality } from '../../types/review.types'
 
-interface QualityOption {
-  quality: ReviewQuality
-  label: string
-  hint: string
-  className: string
-}
-
-const QUALITY_OPTIONS: QualityOption[] = [
+// Intervalos SM-2 aproximados por qualidade — mostrados nos botões
+const QUALITY_OPTIONS = [
   {
-    quality: 0,
+    quality: 0 as ReviewQuality,
     label: 'De Novo',
-    hint: 'Não lembrei',
-    className:
-      'border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800/60 dark:text-red-400 dark:hover:bg-red-950/40',
+    interval: 'repetir hoje',
+    style: {
+      border: '1.5px solid #3A1E1E',
+      background: 'rgba(180,50,50,.08)',
+      color: '#D07070',
+    },
   },
   {
-    quality: 2,
+    quality: 2 as ReviewQuality,
     label: 'Difícil',
-    hint: 'Com bastante esforço',
-    className:
-      'border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800/60 dark:text-orange-400 dark:hover:bg-orange-950/40',
+    interval: 'em 1 dia',
+    style: {
+      border: '1.5px solid #3A2A10',
+      background: 'rgba(224,138,48,.10)',
+      color: '#E08A30',
+    },
   },
   {
-    quality: 4,
+    quality: 4 as ReviewQuality,
     label: 'Bom',
-    hint: 'Com alguma pausa',
-    className:
-      'border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800/60 dark:text-blue-400 dark:hover:bg-blue-950/40',
+    interval: 'em 4 dias',
+    style: {
+      border: '1.5px solid #1C2E4A',
+      background: 'rgba(60,100,180,.08)',
+      color: '#7AAAE8',
+    },
   },
   {
-    quality: 5,
+    quality: 5 as ReviewQuality,
     label: 'Fácil',
-    hint: 'Lembrei bem!',
-    className:
-      'border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800/60 dark:text-emerald-400 dark:hover:bg-emerald-950/40',
+    interval: 'em 9 dias',
+    style: {
+      border: '1.5px solid #1A3528',
+      background: 'rgba(61,170,120,.10)',
+      color: '#3DAA78',
+    },
   },
 ]
 
 function formatLastReview(lastReview: string | null): string {
   if (!lastReview) return 'Primeira revisão'
-  const diffDays = Math.floor(
-    (Date.now() - new Date(lastReview).getTime()) / 86_400_000,
-  )
+  const diffDays = Math.floor((Date.now() - new Date(lastReview).getTime()) / 86_400_000)
   if (diffDays === 0) return 'Revisada hoje'
   if (diffDays === 1) return 'Revisada ontem'
   if (diffDays < 30) return `Há ${diffDays} dias`
@@ -59,81 +62,69 @@ interface ReviewCardProps {
   subjectColor?: string
 }
 
-export function ReviewCard({
-  review,
-  onAnswer,
-  onSkip,
-  isLoading,
-  subjectColor,
-}: ReviewCardProps) {
-  return (
-    <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-      {subjectColor && (
-        <div
-          className="absolute inset-y-0 left-0 w-1"
-          style={{ backgroundColor: subjectColor }}
-        />
-      )}
+export function ReviewCard({ review, onAnswer, onSkip, isLoading, subjectColor }: ReviewCardProps) {
+  const accentColor = subjectColor || '#3DAA78'
 
+  return (
+    <div
+      className="bg-card border border-edge-s rounded-[2px] overflow-hidden"
+      style={{ borderLeftWidth: '4px', borderLeftColor: accentColor }}
+    >
       <div className="px-8 py-7">
         {/* Meta row */}
-        <div className="flex items-center justify-between mb-8 text-sm text-gray-400 dark:text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-4 mb-4">
+          <span
+            className="font-mono text-[9.5px] tracking-[0.1em] uppercase"
+            style={{ color: accentColor }}
+          >
+            Revisão
+          </span>
+          <span className="font-mono text-[9.5px] text-ink-muted">
             {formatLastReview(review.lastReview)}
           </span>
           {review.streak > 0 && (
-            <span className="flex items-center gap-1 text-orange-500 dark:text-orange-400 font-medium">
-              <Flame className="w-3.5 h-3.5" />
-              {review.streak}
+            <span className="font-mono text-[9.5px] text-ember ml-auto">
+              {review.streak} dias ›
             </span>
           )}
         </div>
 
-        {/* Topic name */}
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white leading-snug">
+        {/* Topic */}
+        <div className="mb-8">
+          <h2 className="font-serif text-[25px] font-bold tracking-[-0.02em] text-ink leading-[1.15] text-balance">
             {review.topic.name}
           </h2>
           {review.topic.description && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p className="mt-2 text-[12.5px] text-ink-muted leading-[1.65]">
               {review.topic.description}
             </p>
           )}
         </div>
 
-        {/* Prompt */}
-        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">
-          Como foi sua lembrança?
-        </p>
-
-        {/* Quality buttons */}
-        <div className="grid grid-cols-2 gap-2.5">
-          {QUALITY_OPTIONS.map(({ quality, label, hint, className }) => (
+        {/* Quality buttons — 4 colunas com intervalo visível */}
+        <div className="grid grid-cols-4 gap-[9px] mb-3">
+          {QUALITY_OPTIONS.map(({ quality, label, interval, style }) => (
             <button
               key={quality}
               onClick={() => onAnswer(quality)}
               disabled={isLoading}
-              className={`
-                px-4 py-3 rounded-xl border-2 text-left transition-colors duration-150
-                disabled:opacity-40 disabled:cursor-not-allowed
-                ${className}
-              `}
+              className="rounded-[4px] px-2 py-[11px] pb-[9px] text-center transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-80"
+              style={style}
             >
-              <span className="block text-sm font-semibold">{label}</span>
-              <span className="block text-xs mt-0.5 opacity-70">{hint}</span>
+              <span className="block text-[12px] font-bold leading-none mb-[3px]">{label}</span>
+              <span className="block font-mono text-[8.5px] opacity-60">{interval}</span>
             </button>
           ))}
         </div>
 
         {/* Skip */}
-        <div className="mt-5 text-right">
+        <div className="text-center">
           <button
             onClick={onSkip}
             disabled={isLoading}
-            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-40"
+            className="text-[11px] text-ink-muted hover:text-ink transition-colors underline underline-offset-2 disabled:opacity-40"
           >
-            Pular para depois →
+            Pular por agora
           </button>
         </div>
       </div>

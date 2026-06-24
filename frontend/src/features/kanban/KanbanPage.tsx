@@ -140,16 +140,21 @@ export function KanbanPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {activeBoard?.name || 'Carregando Quadro...'}
-        </h1>
+    <div className="flex h-[calc(100vh-8rem)] flex-col gap-6">
+      <div className="flex items-end justify-between">
+        <div>
+          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-ink-dim mb-[5px]">
+            Gestão de tarefas
+          </div>
+          <h1 className="font-serif text-[26px] font-bold tracking-[-0.02em] text-ink leading-none">
+            {activeBoard?.name || 'Kanban'}
+          </h1>
+        </div>
         <button
           onClick={() => { setTargetColumn('TODO'); setIsFormOpen(true) }}
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition"
+          className="flex items-center gap-2 bg-forest/10 border border-forest/25 text-forest font-mono text-[9.5px] tracking-[0.07em] uppercase rounded-[4px] px-4 py-[9px] hover:bg-forest/15 transition-colors"
         >
-          Nova Tarefa
+          Nova tarefa
         </button>
       </div>
 

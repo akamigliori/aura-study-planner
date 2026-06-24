@@ -4,25 +4,24 @@ interface ReviewProgressProps {
 }
 
 export function ReviewProgress({ completed, total }: ReviewProgressProps) {
-  const percentage = total > 0 ? (completed / total) * 100 : 0
+  const pct = total > 0 ? (completed / total) * 100 : 0
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-500 dark:text-gray-400">Progresso</span>
-        <span className="font-semibold tabular-nums text-gray-700 dark:text-gray-200">
-          {completed} / {total}
-        </span>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex-1">
+        <div className="h-[2px] bg-edge rounded-full overflow-hidden">
+          <div
+            className="h-full bg-forest rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${pct}%` }}
+            role="progressbar"
+            aria-valuenow={completed}
+            aria-valuemin={0}
+            aria-valuemax={total}
+          />
+        </div>
       </div>
-      <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-violet-500 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percentage}%` }}
-          role="progressbar"
-          aria-valuenow={completed}
-          aria-valuemin={0}
-          aria-valuemax={total}
-        />
+      <div className="font-mono text-[9.5px] text-ink-muted flex-shrink-0 tabular">
+        {completed} de {total} revisadas
       </div>
     </div>
   )

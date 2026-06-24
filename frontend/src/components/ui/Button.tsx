@@ -8,16 +8,20 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<string, string> = {
-  primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800',
-  secondary: 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 active:bg-gray-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
-  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200',
+  primary:
+    'bg-forest/10 border border-forest/25 text-forest hover:bg-forest/15 focus:ring-forest/40',
+  secondary:
+    'bg-card2 border border-edge text-ink-muted hover:border-edge-s hover:text-ink focus:ring-edge',
+  danger:
+    'bg-red-900/20 border border-red-800/40 text-red-400 hover:bg-red-900/30 focus:ring-red-800/40',
+  ghost:
+    'bg-transparent border border-transparent text-ink-muted hover:text-ink hover:bg-white/[.03] focus:ring-edge',
 }
 
 const sizeClasses: Record<string, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-8 py-3 text-base',
+  sm: 'px-3 py-[6px] text-[11px]',
+  md: 'px-4 py-[9px] text-[9.5px]',
+  lg: 'px-6 py-[11px] text-[10.5px]',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -31,16 +35,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <button
         ref={ref}
         className={[
-          'inline-flex items-center justify-center rounded-lg font-medium',
-          'transition-colors duration-150 focus:outline-none focus:ring-2',
-          'focus:ring-primary-500 focus:ring-offset-2',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+          'inline-flex items-center justify-center rounded-[4px] font-mono tracking-[0.07em] uppercase',
+          'transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0',
+          'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
           variantClasses[variant],
           sizeClasses[size],
           fullWidth ? 'w-full' : '',
@@ -52,7 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     )
-  }
+  },
 )
 
 Button.displayName = 'Button'

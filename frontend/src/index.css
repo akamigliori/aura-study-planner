@@ -1,69 +1,68 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+  /* ── Cadência — cores dark (primário) ── */
+  --color-shell:     #080F1A;
+  --color-surface:   #0F1A28;
+  --color-card:      #172436;
+  --color-card2:     #1C2C40;
+  --color-ink:       #D4E4F8;
+  --color-ink-muted: #6E88A4;
+  --color-ink-dim:   #344F6A;
+  --color-edge:      #1B2C40;
+  --color-edge-s:    #243650;
+  --color-forest:    #3DAA78;
+  --color-ember:     #E08A30;
 
-  --color-secondary-50: #f8fafc;
-  --color-secondary-100: #f1f5f9;
-  --color-secondary-200: #e2e8f0;
-  --color-secondary-300: #cbd5e1;
-  --color-secondary-400: #94a3b8;
-  --color-secondary-500: #64748b;
-  --color-secondary-600: #475569;
-  --color-secondary-700: #334155;
-  --color-secondary-800: #1e293b;
-  --color-secondary-900: #0f172a;
-
-  --font-family-sans: Jost, system-ui, sans-serif;
+  /* ── Tipografia ── */
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans:  system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'Courier New', Courier, monospace;
 }
 
-/* Glassmorphism utilities */
-.glass {
-  @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
-}
-.glass-panel {
-  @apply bg-white/40 dark:bg-gray-800/40 backdrop-blur-lg border border-white/30 dark:border-white/5;
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-/* Estilos globais */
 body {
-  @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
-  @apply min-h-screen antialiased;
+  background-color: #0F1A28;
+  color: #D4E4F8;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Container principal */
 #root {
-  @apply min-h-screen;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  @apply w-2;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #080F1A; }
+::-webkit-scrollbar-thumb { background: #1B2C40; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #243650; }
 
-::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
-}
-
-/* Focus ring */
+/* Focus ring — usa forest como cor */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-500), 0 0 0 4px #ffffff;
+  box-shadow: 0 0 0 2px #3DAA78, 0 0 0 4px rgba(61,170,120,.15);
+}
+
+/* Utilitários de tipografia */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ── Responsividade base (≤ 860px) ── */
+@media (max-width: 860px) {
+  /* Sidebar colapsa; content ocupa tela toda */
+  .sidebar-fixed {
+    transform: translateX(-100%);
+  }
+  .main-with-sidebar {
+    margin-left: 0 !important;
+  }
 }

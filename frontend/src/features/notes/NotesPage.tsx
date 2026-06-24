@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Plus, Search } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
-import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { NoteCard } from './NoteCard'
 import { NoteForm } from './NoteForm'
@@ -47,19 +46,22 @@ export function NotesPage() {
     <>
     <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-ink-dim mb-[5px]">
+              {notes.length} {notes.length === 1 ? 'nota' : 'notas'}
+            </div>
+            <h1 className="font-serif text-[26px] font-bold tracking-[-0.02em] text-ink leading-none">
               Anotações
             </h1>
-            <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-              {notes.length} {notes.length === 1 ? 'nota' : 'notas'}
-            </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nova Anotação
-          </Button>
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="flex items-center gap-2 bg-forest/10 border border-forest/25 text-forest font-mono text-[9.5px] tracking-[0.07em] uppercase rounded-[4px] px-4 py-[9px] hover:bg-forest/15 transition-colors"
+          >
+            <Plus className="w-3 h-3" />
+            Nova anotação
+          </button>
         </div>
 
         {/* Filters */}
@@ -97,9 +99,10 @@ export function NotesPage() {
           <div className="space-y-6">
             {pinned.length > 0 && (
               <section>
-                <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
-                  Fixadas
-                </h2>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="font-mono text-[8.5px] tracking-[0.13em] uppercase text-ink-dim">Fixadas</span>
+                  <span className="flex-1 h-px bg-edge" />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pinned.map((note) => {
                     const subject = getSubject(note.subjectId)

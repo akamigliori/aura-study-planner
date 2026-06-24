@@ -8,84 +8,85 @@ interface KanbanTaskCardProps {
   onDelete: (taskId: string) => void
 }
 
-const getPriorityColor = (priority: Priority) => {
-  switch (priority) {
-    case 'LOW':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'MEDIUM':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-    case 'HIGH':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
-    case 'URGENT':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
-  }
+const PRIORITY_LABEL: Record<Priority, string> = {
+  LOW: 'Baixa',
+  MEDIUM: 'Média',
+  HIGH: 'Alta',
+  URGENT: 'Urgente',
+}
+
+const PRIORITY_COLOR: Record<Priority, string> = {
+  LOW: '#5B9BE8',
+  MEDIUM: '#6E88A4',
+  HIGH: '#E08A30',
+  URGENT: '#D07070',
 }
 
 export function KanbanTaskCard({ task, onDelete }: KanbanTaskCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
-    data: {
-      type: 'Task',
-      task
-    }
+    data: { type: 'Task', task },
   })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
+  const style = { transform: CSS.Transform.toString(transform), transition }
 
   if (isDragging) {
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className="opacity-50 ring-2 ring-primary-500 rounded-lg bg-gray-100 dark:bg-gray-800 h-24 border border-dashed border-gray-400"
+        className="opacity-40 bg-card2 border border-edge-s rounded-[4px] h-[72px]"
       />
     )
   }
+
+  const priorityColor = PRIORITY_COLOR[task.priority] || '#6E88A4'
+  const priorityLabel = PRIORITY_LABEL[task.priority] || task.priority
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative flex flex-col gap-2 rounded-lg bg-white/70 dark:bg-gray-800/70 p-3 shadow-sm backdrop-blur-md border border-white/20 dark:border-gray-700/50 hover:shadow-md transition-shadow"
+      className="group relative bg-card border border-edge rounded-[4px] px-[13px] py-[11px] hover:border-edge-s transition-colors"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            {...attributes}
-            {...listeners}
-            className="cursor-grab hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 touch-none"
-          >
-            <GripVertical size={16} className="text-gray-400" />
-          </div>
-          <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-tight">
-            {task.title}
-          </h3>
+      <div className="flex items-start gap-2">
+        {/* Drag handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing mt-[1px] text-ink-dim hover:text-ink-muted touch-none flex-shrink-0"
+        >
+          <GripVertical className="w-3.5 h-3.5" />
         </div>
-        
+
+        <div className="flex-1 min-w-0">
+          <p className="text-[12.5px] font-semibold text-ink leading-[1.35] line-clamp-2">
+            {task.title}
+          </p>
+          {task.description && (
+            <p className="text-[10.5px] text-ink-muted mt-[3px] line-clamp-2 leading-[1.5]">
+              {task.description}
+            </p>
+          )}
+          <div className="flex items-center gap-[5px] mt-[7px]">
+            <span
+              className="font-mono text-[7.5px] tracking-[0.07em] uppercase rounded-[2px] px-[5px] py-[1.5px]"
+              style={{
+                color: priorityColor,
+                background: `${priorityColor}18`,
+              }}
+            >
+              {priorityLabel}
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={() => onDelete(task.id)}
-          className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
+          className="opacity-0 group-hover:opacity-100 p-[3px] text-ink-dim hover:text-red-400 transition-all flex-shrink-0 rounded"
         >
-          <Trash2 size={14} />
+          <Trash2 className="w-3 h-3" />
         </button>
-      </div>
-
-      <div className="pl-8 flex items-center justify-between mt-1">
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getPriorityColor(task.priority)}`}>
-          {task.priority}
-        </span>
       </div>
     </div>
   )

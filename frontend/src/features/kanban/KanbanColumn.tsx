@@ -5,60 +5,80 @@ import type { KanbanTask, KanbanColumn as ColumnType } from '../../types/kanban.
 import { KanbanTaskCard } from './KanbanTaskCard'
 
 interface KanbanColumnProps {
-  column: {
-    id: ColumnType
-    title: string
-  }
+  column: { id: ColumnType; title: string }
   tasks: KanbanTask[]
   onAddTask: (columnId: ColumnType) => void
   onDeleteTask: (taskId: string) => void
 }
 
+const COLUMN_COLORS: Record<ColumnType, string> = {
+  TODO: '#344F6A',
+  IN_PROGRESS: '#E08A30',
+  DONE: '#3DAA78',
+}
+
 export function KanbanColumn({ column, tasks, onAddTask, onDeleteTask }: KanbanColumnProps) {
   const { setNodeRef, isOver }: any = useDroppable({
     id: column.id,
-    data: {
-      type: 'Column',
-      column
-    }
+    data: { type: 'Column', column },
   })
 
+  const color = COLUMN_COLORS[column.id] || '#344F6A'
+
   return (
-    <div className="flex w-80 flex-col flex-shrink-0">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-gray-700 dark:text-gray-300">{column.title}</h2>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400">
+    <div className="flex w-72 flex-col flex-shrink-0">
+      {/* Column header */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-[8px]">
+          <div
+            className="w-[8px] h-[8px] rounded-[2px] flex-shrink-0"
+            style={{ background: color }}
+          />
+          <span className="font-mono text-[9px] tracking-[0.09em] uppercase text-ink-muted font-semibold">
+            {column.title}
+          </span>
+          <span
+            className="font-mono text-[8px] px-[5px] py-[1px] rounded-[2px]"
+            style={{ background: `${color}18`, color }}
+          >
             {tasks.length}
           </span>
         </div>
         <button
           onClick={() => onAddTask(column.id)}
-          className="p-1 text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-md transition-colors"
-          title="Nova Tarefa"
+          className="p-1 text-ink-dim hover:text-forest transition-colors rounded"
+          title="Nova tarefa"
         >
-          <Plus size={18} />
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
+      {/* Column body */}
       <div
         ref={setNodeRef}
-        className={`flex flex-1 flex-col gap-3 rounded-xl min-h-[150px] p-3 transition-colors ${
-          isOver 
-            ? 'bg-primary-50/50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700' 
-            : 'bg-gray-100/50 dark:bg-gray-800/30'
-        }`}
+        className={[
+          'flex flex-1 flex-col gap-[6px] rounded-[5px] min-h-[150px] p-[6px] transition-colors border',
+          isOver
+            ? 'bg-forest/5 border-forest/30'
+            : 'bg-card/50 border-edge',
+        ].join(' ')}
+        style={{ borderTopWidth: '2px', borderTopColor: color }}
       >
-        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <KanbanTaskCard key={task.id} task={task} onDelete={onDeleteTask} />
           ))}
         </SortableContext>
-        
+
         {tasks.length === 0 && (
-          <div className="mt-4 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500">
-            <span className="text-sm">Nenhuma tarefa</span>
-            <span className="text-xs">Solte aqui ou clique em +</span>
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
+            <span className="font-mono text-[9px] text-ink-dim">Nenhuma tarefa</span>
+            <button
+              onClick={() => onAddTask(column.id)}
+              className="mt-2 font-mono text-[8.5px] text-forest/60 hover:text-forest transition-colors"
+            >
+              + adicionar
+            </button>
           </div>
         )}
       </div>
