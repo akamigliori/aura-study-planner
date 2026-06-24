@@ -9,6 +9,7 @@ import { SubjectDetailsPage } from '../features/topics/SubjectDetailsPage'
 import { SchedulePage } from '../features/schedule/SchedulePage'
 import { KanbanPage } from '../features/kanban/KanbanPage'
 import { ReviewPage } from '../features/review/ReviewPage'
+import { NotesPage } from '../features/notes/NotesPage'
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -63,7 +64,9 @@ export function AppRoutes() {
           path="/notes"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Anotações" />
+              <MainLayout>
+                <NotesPage />
+              </MainLayout>
             </ProtectedRoute>
           }
         />

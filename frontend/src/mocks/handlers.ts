@@ -2,6 +2,18 @@ import { http, HttpResponse } from 'msw'
 
 const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3000'
 
+const mockNote = {
+  id: 'note-1',
+  title: 'Derivadas',
+  content: 'Regra da cadeia: d/dx[f(g(x))] = f\'(g(x)) · g\'(x)',
+  tags: ['cálculo'],
+  isPinned: false,
+  subjectId: 'subject-1',
+  userId: 'user-1',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+}
+
 const mockReview = {
   id: 'review-1',
   topicId: 'topic-1',
@@ -47,6 +59,19 @@ export const handlers = [
         }
       }
     })
+  }),
+
+  http.get(`${API_URL}/notes`, () => {
+    return HttpResponse.json({ data: { notes: [mockNote] } })
+  }),
+
+  http.post(`${API_URL}/notes`, async ({ request }) => {
+    const body = await request.json() as Record<string, unknown>
+    return HttpResponse.json({ data: { note: { id: 'note-new', ...body, userId: 'user-1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } } })
+  }),
+
+  http.delete(`${API_URL}/notes/:id`, () => {
+    return new HttpResponse(null, { status: 204 })
   }),
 
   http.get(`${API_URL}/auth/me`, () => {
